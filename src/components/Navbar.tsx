@@ -1,21 +1,31 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { IconClose, IconMenu, LogoMark } from './icons'
+import { IconClose, IconMenu } from './icons'
 
 const LINKS = [
-  { label: 'О нас', href: '#about' },
-  { label: 'Проекты', href: '#cases' },
+  { label: 'Услуги', href: '#services' },
+  { label: 'Кейсы', href: '#cases' },
   { label: 'Команда', href: '#team' },
   { label: 'Процесс', href: '#process' },
   { label: 'Технологии', href: '#tech' },
 ]
 
+function Logomark() {
+  return (
+    <svg className="logomark" viewBox="0 0 32 32" fill="none">
+      <rect x="2" y="2" width="28" height="28" rx="8" fill="#A3E635" />
+      <path d="M21 12a6 6 0 1 0 0 8" stroke="#0a0b0c" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function Brand() {
   return (
-    <a href="#top" className="flex items-center gap-2.5 font-display text-xl font-bold tracking-tight">
-      <LogoMark className="h-9 w-9" />
-      <span className="text-heading">
-        CGP<span className="text-gradient">.APP</span>
+    <a href="#top" className="brand">
+      <Logomark />
+      <span>
+        <b>CGP</b>
+        <span className="dot-app">.app</span>
       </span>
     </a>
   )
@@ -26,7 +36,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24)
+    const onScroll = () => setScrolled(window.scrollY > 16)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -40,86 +50,75 @@ export default function Navbar() {
   }, [open])
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <div
-        className={`transition-all duration-300 ${
-          scrolled ? 'glass border-b' : 'border-b border-transparent'
-        }`}
-      >
-        <nav className="container-x flex h-[68px] items-center justify-between">
-          <Brand />
-
-          <div className="hidden items-center gap-1 lg:flex">
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className="rounded-full px-4 py-2 text-[15px] font-medium text-body transition-colors hover:text-heading"
-              >
-                {l.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="hidden lg:block">
-            <a href="#contact" className="btn-primary !px-6 !py-2.5 text-sm">
-              Связаться с нами
+    <header className={scrolled ? 'scrolled' : ''}>
+      <div className="wrap nav">
+        <Brand />
+        <nav className="nav-links">
+          {LINKS.map((l) => (
+            <a key={l.href} href={l.href}>
+              {l.label}
             </a>
-          </div>
-
+          ))}
+        </nav>
+        <div className="nav-right">
+          <a href="#contact" className="btn btn-primary">
+            Обсудить проект
+          </a>
           <button
             type="button"
+            className="burger"
             aria-label="Меню"
             onClick={() => setOpen(true)}
-            className="glass flex h-11 w-11 items-center justify-center rounded-xl text-heading lg:hidden"
           >
-            <IconMenu className="h-6 w-6" />
+            <IconMenu className="h-5 w-5" />
           </button>
-        </nav>
+        </div>
       </div>
 
       <AnimatePresence>
         {open && (
           <motion.div
+            className="mobile-menu"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-bg/95 backdrop-blur-xl lg:hidden"
           >
-            <div className="container-x flex h-[68px] items-center justify-between">
+            <div className="wrap nav" style={{ padding: 0 }}>
               <Brand />
               <button
                 type="button"
+                className="burger"
+                style={{ display: 'flex' }}
                 aria-label="Закрыть"
                 onClick={() => setOpen(false)}
-                className="glass flex h-11 w-11 items-center justify-center rounded-xl text-heading"
               >
-                <IconClose className="h-6 w-6" />
+                <IconClose className="h-5 w-5" />
               </button>
             </div>
             <motion.div
               initial="hidden"
               animate="show"
               variants={{ show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } } }}
-              className="container-x mt-6 flex flex-col gap-2"
+              style={{ marginTop: 12 }}
             >
               {LINKS.map((l) => (
                 <motion.a
                   key={l.href}
                   href={l.href}
+                  className="m-link"
                   onClick={() => setOpen(false)}
-                  variants={{ hidden: { opacity: 0, x: -16 }, show: { opacity: 1, x: 0 } }}
-                  className="border-b border-line/60 py-4 font-display text-2xl font-semibold text-heading"
+                  variants={{ hidden: { opacity: 0, x: -14 }, show: { opacity: 1, x: 0 } }}
                 >
                   {l.label}
                 </motion.a>
               ))}
               <a
                 href="#contact"
+                className="btn btn-primary btn-lg"
+                style={{ marginTop: 28, width: '100%', justifyContent: 'center' }}
                 onClick={() => setOpen(false)}
-                className="btn-primary mt-6 w-full"
               >
-                Связаться с нами
+                Обсудить проект
               </a>
             </motion.div>
           </motion.div>

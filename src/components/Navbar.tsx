@@ -4,17 +4,23 @@ import { IconClose, IconMenu } from './icons'
 
 const LINKS = [
   { label: 'Услуги', href: '#services' },
-  { label: 'Кейсы', href: '#cases' },
-  { label: 'Команда', href: '#team' },
+  { label: 'Работы', href: '#cases' },
   { label: 'Процесс', href: '#process' },
   { label: 'Технологии', href: '#tech' },
+  { label: 'Контакты', href: '#contact' },
 ]
 
 function Logomark() {
   return (
     <svg className="logomark" viewBox="0 0 32 32" fill="none">
-      <rect x="2" y="2" width="28" height="28" rx="8" fill="#A3E635" />
-      <path d="M21 12a6 6 0 1 0 0 8" stroke="#0a0b0c" strokeWidth="3" strokeLinecap="round" />
+      <defs>
+        <linearGradient id="lmgN" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+          <stop className="logo-grad-1" />
+          <stop offset="1" className="logo-grad-2" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="28" height="28" rx="9" fill="url(#lmgN)" />
+      <path d="M21 11.6a6.2 6.2 0 1 0 0 8.8" stroke="#fff" strokeWidth="3.1" strokeLinecap="round" />
     </svg>
   )
 }

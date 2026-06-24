@@ -2,6 +2,9 @@ import { useRef, useState } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { useGSAP } from '@gsap/react'
 import { gsap } from '../lib/gsap'
+import CountUp from './ui/CountUp'
+import { IconBolt, IconRocket, IconStar, IconUsers } from './icons'
+import type { ComponentType, SVGProps } from 'react'
 
 const container: Variants = {
   hidden: {},
@@ -11,6 +14,20 @@ const item: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
 }
+
+type Stat = {
+  Icon: ComponentType<SVGProps<SVGSVGElement>>
+  count?: number
+  plus?: boolean
+  fixed?: string
+  l: string
+}
+const STATS: Stat[] = [
+  { Icon: IconRocket, count: 50, plus: true, l: 'проектов запущено' },
+  { Icon: IconUsers, count: 15, plus: true, l: 'специалистов в команде' },
+  { Icon: IconBolt, count: 4, plus: true, l: 'лет создаём приложения' },
+  { Icon: IconStar, fixed: '5.0', l: 'средний рейтинг клиентов' },
+]
 
 export default function HeroVideo() {
   const section = useRef<HTMLElement>(null)
@@ -120,16 +137,17 @@ export default function HeroVideo() {
                 animation: 'pulse 2.2s infinite',
               }}
             />
-            Продуктовая команда
+            CGP.APP
           </motion.span>
 
           <motion.h1 variants={item}>
-            Создаём мобильные приложения, которыми пользуются{' '}
-            <span className="accent">миллионы</span>
+            Разрабатываем <span className="accent">мобильные приложения</span>, которые
+            любят пользователи
           </motion.h1>
 
           <motion.p variants={item} className="sub">
-            От идеи и дизайна до запуска, аналитики и роста — под ключ. iOS и Android.
+            CGP.APP — команда опытных разработчиков, создающих быстрые, надёжные и
+            красивые мобильные приложения под iOS и Android.
           </motion.p>
 
           <motion.div variants={item} className="hero-cta">
@@ -137,18 +155,23 @@ export default function HeroVideo() {
               Обсудить проект →
             </a>
             <a href="#cases" className="btn btn-ghost btn-lg">
-              Смотреть кейсы
+              Смотреть работы
             </a>
           </motion.div>
 
-          <motion.div variants={item} className="trust">
-            <span>
-              <span className="star">★</span> 4.9 в App Store
-            </span>
-            <span className="sep" />
-            <span>1.2M+ установок</span>
-            <span className="sep" />
-            <span>30+ проектов</span>
+          <motion.div variants={item} className="hero-stats">
+            {STATS.map((s) => (
+              <div className="hstat" key={s.l}>
+                <div className="hico">
+                  <s.Icon className="h-[18px] w-[18px]" />
+                </div>
+                <div className="hn">
+                  {s.fixed ? s.fixed : <CountUp to={s.count!} />}
+                  {s.plus && <span className="plus">+</span>}
+                </div>
+                <div className="hl">{s.l}</div>
+              </div>
+            ))}
           </motion.div>
         </motion.div>
       </div>

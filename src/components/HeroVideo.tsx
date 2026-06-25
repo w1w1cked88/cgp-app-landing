@@ -1,14 +1,19 @@
 import { useRef, useState } from 'react'
-import { motion, type Variants } from 'framer-motion'
-import { useGSAP } from '@gsap/react'
-import { gsap } from '../lib/gsap'
+import {
+  motion,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+  type Variants,
+} from 'framer-motion'
 import CountUp from './ui/CountUp'
 import { IconBolt, IconRocket, IconStar, IconUsers } from './icons'
 import type { ComponentType, SVGProps } from 'react'
 
 const container: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.09, delayChildren: 0.12 } },
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
 }
 const item: Variants = {
   hidden: { opacity: 0, y: 24 },
@@ -31,35 +36,32 @@ const STATS: Stat[] = [
 
 export default function HeroVideo() {
   const section = useRef<HTMLElement>(null)
-  const media = useRef<HTMLDivElement>(null)
-  const inner = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(true)
 
-  useGSAP(
-    () => {
-      const q = gsap.utils.selector(section)
-      const mm = gsap.matchMedia()
-      // Desktop + motion-OK: pinned cinematic scrub scene
-      mm.add('(min-width: 921px) and (prefers-reduced-motion: no-preference)', () => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: section.current,
-            start: 'top top',
-            end: '+=120%',
-            scrub: 0.5,
-            pin: true,
-            pinSpacing: true,
-            invalidateOnRefresh: true,
-          },
-        })
-        tl.to(media.current, { scale: 1.16, filter: 'blur(7px)', ease: 'none' }, 0)
-          .to(inner.current, { yPercent: -22, autoAlpha: 0, ease: 'none' }, 0)
-          .to(q('.vchip'), { yPercent: -70, autoAlpha: 0, ease: 'none' }, 0)
-      })
-    },
-    { scope: section },
-  )
+  // subtle scroll parallax of the video block
+  const { scrollYProgress } = useScroll({
+    target: section,
+    offset: ['start start', 'end start'],
+  })
+  const visualY = useTransform(scrollYProgress, [0, 1], [0, -56])
+
+  // pointer tilt on the video card
+  const rx = useMotionValue(0)
+  const ry = useMotionValue(0)
+  const srx = useSpring(rx, { stiffness: 120, damping: 14, mass: 0.4 })
+  const sry = useSpring(ry, { stiffness: 120, damping: 14, mass: 0.4 })
+  const onTilt = (e: React.PointerEvent) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    ry.set(px * 8)
+    rx.set(-py * 8)
+  }
+  const resetTilt = () => {
+    rx.set(0)
+    ry.set(0)
+  }
 
   const togglePlay = () => {
     const v = videoRef.current
@@ -75,52 +77,10 @@ export default function HeroVideo() {
 
   return (
     <section className="vhero" id="top" ref={section}>
-      <div className="vhero-media" ref={media}>
-        <motion.video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster={`${import.meta.env.BASE_URL}video/team-poster.webp`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.3, ease: 'easeOut', delay: 0.1 }}
-        >
-          <source src={`${import.meta.env.BASE_URL}video/team.mp4`} type="video/mp4" />
-        </motion.video>
-      </div>
-      <div className="vhero-scrim" />
-      <div className="vhero-grid" />
+      <div className="vhero-bg" />
 
-      <span className="vchip c1">
-        <span className="d" /> iOS · Android
-      </span>
-      <span className="vchip c2">✓ build passed</span>
-      <span className="vchip c3">
-        <span className="d" /> 1.2M+ установок
-      </span>
-
-      <button
-        type="button"
-        className="vpause"
-        onClick={togglePlay}
-        aria-label={playing ? 'Пауза видео' : 'Воспроизвести видео'}
-      >
-        {playing ? (
-          <svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor">
-            <rect x="2" y="1.5" width="3" height="9" rx="1" />
-            <rect x="7" y="1.5" width="3" height="9" rx="1" />
-          </svg>
-        ) : (
-          <svg width="13" height="13" viewBox="0 0 12 12" fill="currentColor">
-            <path d="M3 1.8v8.4L10 6 3 1.8Z" />
-          </svg>
-        )}
-      </button>
-
-      <div className="wrap vhero-inner" ref={inner}>
+      <div className="wrap vhero-grid2">
+        {/* ---------- copy ---------- */}
         <motion.div
           className="vhero-copy"
           variants={container}
@@ -174,11 +134,68 @@ export default function HeroVideo() {
             ))}
           </motion.div>
         </motion.div>
-      </div>
 
-      <div className="scroll-hint">
-        <div className="m" />
-        scroll
+        {/* ---------- framed video ---------- */}
+        <motion.div
+          className="vhero-visual"
+          style={{ y: visualY }}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+        >
+          <div className="video-glow" />
+          <motion.div
+            className="video-card"
+            onPointerMove={onTilt}
+            onPointerLeave={resetTilt}
+            style={{ rotateX: srx, rotateY: sry, transformPerspective: 900 }}
+          >
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster={`${import.meta.env.BASE_URL}video/team-poster.webp`}
+            >
+              <source src={`${import.meta.env.BASE_URL}video/team.mp4`} type="video/mp4" />
+            </video>
+            <button
+              type="button"
+              className="vpause"
+              onClick={togglePlay}
+              aria-label={playing ? 'Пауза видео' : 'Воспроизвести видео'}
+            >
+              {playing ? (
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                  <rect x="2" y="1.5" width="3" height="9" rx="1" />
+                  <rect x="7" y="1.5" width="3" height="9" rx="1" />
+                </svg>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                  <path d="M3 1.8v8.4L10 6 3 1.8Z" />
+                </svg>
+              )}
+            </button>
+          </motion.div>
+
+          <span className="vchip c1" style={{ animation: 'floaty 6s ease-in-out infinite' }}>
+            <span className="d" /> iOS · Android
+          </span>
+          <span
+            className="vchip c2"
+            style={{ animation: 'floaty 7.5s ease-in-out infinite', animationDelay: '-2s' }}
+          >
+            ✓ build passed
+          </span>
+          <span
+            className="vchip c3"
+            style={{ animation: 'floaty 6.8s ease-in-out infinite', animationDelay: '-1s' }}
+          >
+            <span className="d" /> 1.2M+ установок
+          </span>
+        </motion.div>
       </div>
     </section>
   )

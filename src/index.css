@@ -131,44 +131,40 @@ h2 { font-size: clamp(26px, 3.4vw, 38px); line-height: 1.12; letter-spacing: -0.
 .sec-head p { color: var(--muted); margin-top: 14px; font-size: 16px; }
 
 /* ============================================================
-   VIDEO HERO  (two-column: copy left, framed video right)
+   VIDEO HERO  (full-bleed, monolithic — team right, text on faded-dark left)
    ============================================================ */
-.vhero { position: relative; overflow: hidden; padding: 132px 0 74px; border-bottom: 1px solid var(--line); }
-.vhero-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-.vhero-bg::before {
-  content: ""; position: absolute; inset: 0; opacity: .14;
-  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 70% 60% at 72% 32%, #000, transparent 72%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 72% 32%, #000, transparent 72%);
-}
-.vhero-bg::after {
-  content: ""; position: absolute; top: -12%; right: -6%; width: 62%; height: 95%;
-  background: radial-gradient(closest-side, rgba(124,92,255,.16), rgba(168,85,247,.07), transparent 72%); filter: blur(12px);
+.vhero { position: relative; overflow: hidden; min-height: 92vh; display: flex; align-items: center; padding: 100px 0 64px; }
+
+/* violet ambient glow behind the team */
+.vhero-glow { position: absolute; right: 3%; top: 6%; width: 52%; height: 86%; z-index: 0; background: radial-gradient(closest-side, rgba(124,92,255,.22), rgba(168,85,247,.08), transparent 70%); filter: blur(50px); pointer-events: none; }
+
+/* the video fills the whole hero; its left edge melts into the page bg */
+.vhero-media { position: absolute; inset: 0; z-index: 1; will-change: transform; }
+.vhero-media video, .vhero-media img.vposter {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 76% center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.10) 24%, #000 54%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.10) 24%, #000 54%);
 }
 
-.vhero-grid2 { position: relative; z-index: 5; display: grid; grid-template-columns: 1.02fr 0.98fr; gap: 52px; align-items: center; }
-.vhero-copy { max-width: 600px; }
+/* blend the video into the page (left for text, top/bottom seamless) */
+.vhero-scrim {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--bg) 3%, rgba(11,10,20,.74) 30%, rgba(11,10,20,.12) 52%, transparent 66%),
+    linear-gradient(0deg, var(--bg) 1%, transparent 22%),
+    linear-gradient(180deg, var(--bg) 0%, transparent 14%);
+}
+
+.vhero-content { position: relative; z-index: 5; width: 100%; }
+.vhero-copy { max-width: 560px; }
 .eyebrow-chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 12.5px; color: var(--lime); border: 1px solid var(--lime-dim); background: rgba(139,92,246,.08); padding: 6px 12px; border-radius: 99px; }
 .vhero h1 { margin-top: 22px; }
-.vhero .sub { max-width: 500px; }
+.vhero .sub { max-width: 480px; }
 
-/* frameless video block (right) — edges feather into the page background */
-.vhero-visual { position: relative; }
-.video-card {
-  position: relative; aspect-ratio: 16 / 10; will-change: transform;
-}
-.video-card video, .video-card img.vposter {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center;
-  -webkit-mask-image: radial-gradient(125% 118% at 58% 44%, #000 42%, rgba(0,0,0,.5) 63%, transparent 84%);
-  mask-image: radial-gradient(125% 118% at 58% 44%, #000 42%, rgba(0,0,0,.5) 63%, transparent 84%);
-}
-.video-glow { position: absolute; inset: -24% -18%; z-index: -1; background: radial-gradient(closest-side, rgba(124,92,255,.30), rgba(168,85,247,.13), transparent 72%); filter: blur(34px); }
-
-/* floating mono chips around the card */
-.vchip { position: absolute; z-index: 6; font-family: var(--mono); font-size: 12px; color: var(--text); background: rgba(20,17,42,.82); border: 1px solid var(--line-2); backdrop-filter: blur(8px); padding: 7px 11px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 8px 24px -10px rgba(0,0,0,.7); }
+/* floating mono chips over the team (right) */
+.vchip { position: absolute; z-index: 6; font-family: var(--mono); font-size: 12px; color: var(--text); background: rgba(20,17,42,.78); border: 1px solid var(--line-2); backdrop-filter: blur(8px); padding: 7px 11px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 8px 24px -10px rgba(0,0,0,.7); }
 .vchip .d { width: 7px; height: 7px; border-radius: 99px; background: var(--lime); }
-.vchip.c1 { top: -16px; right: 26px; } .vchip.c2 { top: 42%; right: -16px; } .vchip.c3 { bottom: 16px; left: -16px; }
+.vchip.c1 { top: 17%; right: 6%; } .vchip.c2 { top: 47%; right: 2.5%; } .vchip.c3 { bottom: 15%; right: 13%; }
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
 /* video pause button (a11y - WCAG 2.2.2) */
@@ -285,8 +281,6 @@ footer { border-top: 1px solid var(--line); padding: 56px 0 40px; position: rela
 @media (max-width: 920px) {
   .nav-links, .nav-right .btn { display: none; }
   .burger { display: flex; }
-  .vhero-grid2 { grid-template-columns: 1fr; gap: 36px; }
-  .vhero-copy { max-width: 600px; }
   .pstrip { flex-direction: column; gap: 18px; }
   .parrow { display: none; }
   .stats { grid-template-columns: repeat(2, 1fr); }
@@ -300,7 +294,9 @@ footer { border-top: 1px solid var(--line); padding: 56px 0 40px; position: rela
 }
 @media (max-width: 680px) {
   section { padding: 64px 0; }
-  .vhero { padding: 104px 0 54px; }
+  .vhero { min-height: 86vh; padding: 96px 0 52px; }
+  .vhero-media video, .vhero-media img.vposter { -webkit-mask-image: none; mask-image: none; object-position: 60% center; }
+  .vhero-scrim { background: linear-gradient(180deg, rgba(11,10,20,.84) 0%, rgba(11,10,20,.5) 46%, var(--bg) 92%), linear-gradient(0deg, var(--bg) 2%, transparent 30%); }
   .vchip { display: none; }
   .cta { padding: 40px 24px; }
   .case-card { width: 300px; }

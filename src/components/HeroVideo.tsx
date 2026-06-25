@@ -1,12 +1,5 @@
 import { useRef, useState } from 'react'
-import {
-  motion,
-  useMotionValue,
-  useScroll,
-  useSpring,
-  useTransform,
-  type Variants,
-} from 'framer-motion'
+import { motion, useScroll, useTransform, type Variants } from 'framer-motion'
 import CountUp from './ui/CountUp'
 import { IconBolt, IconRocket, IconStar, IconUsers } from './icons'
 import type { ComponentType, SVGProps } from 'react'
@@ -39,29 +32,14 @@ export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [playing, setPlaying] = useState(true)
 
-  // subtle scroll parallax of the video block
+  // subtle scroll life: video drifts/scales, copy parallaxes up
   const { scrollYProgress } = useScroll({
     target: section,
     offset: ['start start', 'end start'],
   })
-  const visualY = useTransform(scrollYProgress, [0, 1], [0, -56])
-
-  // pointer tilt on the video card
-  const rx = useMotionValue(0)
-  const ry = useMotionValue(0)
-  const srx = useSpring(rx, { stiffness: 120, damping: 14, mass: 0.4 })
-  const sry = useSpring(ry, { stiffness: 120, damping: 14, mass: 0.4 })
-  const onTilt = (e: React.PointerEvent) => {
-    const r = e.currentTarget.getBoundingClientRect()
-    const px = (e.clientX - r.left) / r.width - 0.5
-    const py = (e.clientY - r.top) / r.height - 0.5
-    ry.set(px * 8)
-    rx.set(-py * 8)
-  }
-  const resetTilt = () => {
-    rx.set(0)
-    ry.set(0)
-  }
+  const mediaScale = useTransform(scrollYProgress, [0, 1], [1, 1.08])
+  const mediaY = useTransform(scrollYProgress, [0, 1], [0, 40])
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, -28])
 
   const togglePlay = () => {
     const v = videoRef.current
@@ -77,10 +55,62 @@ export default function HeroVideo() {
 
   return (
     <section className="vhero" id="top" ref={section}>
-      <div className="vhero-bg" />
+      <div className="vhero-glow" />
 
-      <div className="wrap vhero-grid2">
-        {/* ---------- copy ---------- */}
+      <motion.div className="vhero-media" style={{ scale: mediaScale, y: mediaY }}>
+        <motion.video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster={`${import.meta.env.BASE_URL}video/team-poster.webp`}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+        >
+          <source src={`${import.meta.env.BASE_URL}video/team.mp4`} type="video/mp4" />
+        </motion.video>
+      </motion.div>
+
+      <div className="vhero-scrim" />
+
+      <button
+        type="button"
+        className="vpause"
+        onClick={togglePlay}
+        aria-label={playing ? 'Пауза видео' : 'Воспроизвести видео'}
+      >
+        {playing ? (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <rect x="2" y="1.5" width="3" height="9" rx="1" />
+            <rect x="7" y="1.5" width="3" height="9" rx="1" />
+          </svg>
+        ) : (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+            <path d="M3 1.8v8.4L10 6 3 1.8Z" />
+          </svg>
+        )}
+      </button>
+
+      <span className="vchip c1" style={{ animation: 'floaty 6s ease-in-out infinite' }}>
+        <span className="d" /> iOS · Android
+      </span>
+      <span
+        className="vchip c2"
+        style={{ animation: 'floaty 7.5s ease-in-out infinite', animationDelay: '-2s' }}
+      >
+        ✓ build passed
+      </span>
+      <span
+        className="vchip c3"
+        style={{ animation: 'floaty 6.8s ease-in-out infinite', animationDelay: '-1s' }}
+      >
+        <span className="d" /> 1.2M+ установок
+      </span>
+
+      <motion.div className="wrap vhero-content" style={{ y: copyY }}>
         <motion.div
           className="vhero-copy"
           variants={container}
@@ -134,69 +164,7 @@ export default function HeroVideo() {
             ))}
           </motion.div>
         </motion.div>
-
-        {/* ---------- framed video ---------- */}
-        <motion.div
-          className="vhero-visual"
-          style={{ y: visualY }}
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
-        >
-          <div className="video-glow" />
-          <motion.div
-            className="video-card"
-            onPointerMove={onTilt}
-            onPointerLeave={resetTilt}
-            style={{ rotateX: srx, rotateY: sry, transformPerspective: 900 }}
-          >
-            <video
-              ref={videoRef}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              poster={`${import.meta.env.BASE_URL}video/team-poster.webp`}
-            >
-              <source src={`${import.meta.env.BASE_URL}video/team.mp4`} type="video/mp4" />
-            </video>
-            <button
-              type="button"
-              className="vpause"
-              onClick={togglePlay}
-              aria-label={playing ? 'Пауза видео' : 'Воспроизвести видео'}
-            >
-              {playing ? (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                  <rect x="2" y="1.5" width="3" height="9" rx="1" />
-                  <rect x="7" y="1.5" width="3" height="9" rx="1" />
-                </svg>
-              ) : (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-                  <path d="M3 1.8v8.4L10 6 3 1.8Z" />
-                </svg>
-              )}
-            </button>
-          </motion.div>
-
-          <span className="vchip c1" style={{ animation: 'floaty 6s ease-in-out infinite' }}>
-            <span className="d" /> iOS · Android
-          </span>
-          <span
-            className="vchip c2"
-            style={{ animation: 'floaty 7.5s ease-in-out infinite', animationDelay: '-2s' }}
-          >
-            ✓ build passed
-          </span>
-          <span
-            className="vchip c3"
-            style={{ animation: 'floaty 6.8s ease-in-out infinite', animationDelay: '-1s' }}
-          >
-            <span className="d" /> 1.2M+ установок
-          </span>
-        </motion.div>
-      </div>
+      </motion.div>
     </section>
   )
 }

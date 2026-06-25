@@ -110,7 +110,7 @@ export default function HeroVideo() {
         <span className="d" /> 1.2M+ установок
       </span>
 
-      <motion.div className="wrap vhero-content" style={{ y: copyY }}>
+      <motion.div className="vhero-content" style={{ y: copyY }}>
         <motion.div
           className="vhero-copy"
           variants={container}
